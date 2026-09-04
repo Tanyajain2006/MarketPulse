@@ -131,12 +131,26 @@ Backend:  http://localhost:8080/api/health
 ML:       http://localhost:8000/health
 ```
 
+## Authentication
+
+Authentication is implemented with Spring Security, BCrypt password hashing, and signed JWTs:
+
+```text
+POST /api/auth/register
+POST /api/auth/login
+```
+
+Registration creates a unique email-based account and returns a JWT with the public user profile. Login returns the same shape after verifying the BCrypt hash. The frontend keeps the session token in browser session storage, never stores plaintext passwords, redirects unauthenticated users to `/login`, and protects `/dashboard`.
+
+Set `JWT_SECRET` in `backend/.env` to a private value of at least 32 bytes. It must remain backend-only and must never be added to frontend environment variables.
+
 ## Current Foundation
 
 The repository currently provides:
 
 - Spring Boot API with environment-based MySQL and Hibernate configuration.
 - JSON backend health endpoint and frontend-to-backend connectivity status.
+- JWT authentication with registration, login, logout, protected dashboard routing, validation, and JSON error responses.
 - React, TypeScript, Vite, Tailwind CSS, and React Router application shell.
 - Minimal FastAPI service with a health endpoint.
 - MySQL Compose service with a persistent named volume and health check.

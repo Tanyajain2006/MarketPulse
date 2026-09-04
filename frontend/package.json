@@ -16,7 +16,6 @@
     "recharts": "latest"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "latest",
     "@vitejs/plugin-react": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
