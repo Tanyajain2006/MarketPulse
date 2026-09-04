@@ -1,101 +1,16 @@
-import { useEffect, useState } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './auth'
 
-type HealthResponse = {
-  status: string
-  service: string
-}
-
+type HealthResponse = { status: string; service: string }
 const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
-function Overview() {
-  const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'unavailable'>('checking')
+function Shell({ children }: { children: ReactNode }) { const { user, logout } = useAuth(); const navigate = useNavigate(); return <div className="min-h-screen bg-slate-950"><header className="border-b border-slate-800/80"><nav className="mx-auto flex h-[88px] max-w-6xl items-center justify-between px-6 lg:px-10"><Link className="text-lg font-semibold tracking-tight text-white" to={user ? '/dashboard' : '/login'}>Market<span className="text-cyan-300">Pulse</span></Link>{user ? <div className="flex items-center gap-5"><span className="text-sm text-slate-400">{user.name}</span><button className="text-sm font-medium text-slate-400 hover:text-white" onClick={() => { logout(); navigate('/login') }}>Log out</button></div> : null}</nav></header>{children}</div> }
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetch(`${backendUrl}/health`, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error('Health request failed')
-        return response.json() as Promise<HealthResponse>
-      })
-      .then((health) => setBackendStatus(health.status === 'UP' ? 'connected' : 'unavailable'))
-      .catch(() => setBackendStatus('unavailable'))
-
-    return () => controller.abort()
-  }, [])
-
-  const statusLabel = backendStatus === 'connected'
-    ? 'Backend Connected'
-    : backendStatus === 'unavailable'
-      ? 'Backend Unavailable'
-      : 'Checking backend'
-
-  return (
-    <main className="mx-auto flex min-h-[calc(100vh-88px)] max-w-6xl items-center px-6 py-16 lg:px-10">
-      <section className="grid w-full gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-        <div>
-          <p className="mb-6 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300">Market intelligence, clarified</p>
-          <h1 className="max-w-3xl text-5xl font-semibold leading-[0.98] tracking-tight text-white sm:text-7xl">
-            See what changed. <span className="text-cyan-300">Understand why.</span>
-          </h1>
-          <p className="mt-8 max-w-xl text-lg leading-8 text-slate-300">
-            MarketPulse is the foundation for a calmer, clearer way to revisit the market and know what deserves your attention.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Link className="rounded-full bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200" to="/status">
-              View system status
-            </Link>
-            <span className={`rounded-full border px-4 py-3 text-sm font-semibold ${backendStatus === 'connected' ? 'border-emerald-400/40 text-emerald-300' : 'border-slate-600 text-slate-300'}`}>
-              {statusLabel}
-            </span>
-          </div>
-        </div>
-        <div className="border-l border-slate-700 pl-8 lg:mb-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Foundation phase</p>
-          <dl className="mt-8 space-y-6">
-            <div><dt className="text-sm text-slate-500">Frontend</dt><dd className="mt-1 text-xl text-white">React + TypeScript</dd></div>
-            <div><dt className="text-sm text-slate-500">API</dt><dd className="mt-1 text-xl text-white">Spring Boot</dd></div>
-            <div><dt className="text-sm text-slate-500">Data layer</dt><dd className="mt-1 text-xl text-white">MySQL</dd></div>
-          </dl>
-        </div>
-      </section>
-    </main>
-  )
-}
-
-function Status() {
-  return (
-    <main className="mx-auto max-w-6xl px-6 py-16 lg:px-10">
-      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300">System status</p>
-      <h1 className="mt-5 text-4xl font-semibold text-white">Local development foundation</h1>
-      <p className="mt-4 max-w-2xl text-slate-300">The product services are being connected one boundary at a time.</p>
-      <div className="mt-12 grid gap-4 sm:grid-cols-3">
-        {['Frontend shell', 'Spring Boot API', 'FastAPI service'].map((service) => (
-          <div className="border border-slate-700 bg-slate-900/60 p-6" key={service}>
-            <div className="mb-8 h-2 w-2 rounded-full bg-cyan-300" />
-            <p className="font-medium text-white">{service}</p>
-            <p className="mt-2 text-sm text-slate-400">Ready for the next implementation phase.</p>
-          </div>
-        ))}
-      </div>
-    </main>
-  )
-}
-
-export default function App() {
-  return (
-    <div className="min-h-screen bg-slate-950">
-      <header className="border-b border-slate-800/80">
-        <nav className="mx-auto flex h-[88px] max-w-6xl items-center justify-between px-6 lg:px-10">
-          <Link className="text-lg font-semibold tracking-tight text-white" to="/">Market<span className="text-cyan-300">Pulse</span></Link>
-          <Link className="text-sm font-medium text-slate-400 transition hover:text-white" to="/status">Status</Link>
-        </nav>
-      </header>
-      <Routes>
-        <Route path="/" element={<Overview />} />
-        <Route path="/status" element={<Status />} />
-      </Routes>
-    </div>
-  )
-}
+function AuthCard({ mode }: { mode: 'login' | 'register' }) { const { user, login, register } = useAuth(); const navigate = useNavigate(); const isRegister = mode === 'register'; const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [pending, setPending] = useState(false); if (user) return <Navigate to="/dashboard" replace />; const submit = async (event: FormEvent) => { event.preventDefault(); setError(''); setPending(true); try { isRegister ? await register({ name, email, password }) : await login({ email, password }); navigate('/dashboard') } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to authenticate.') } finally { setPending(false) } }; return <main className="mx-auto flex min-h-[calc(100vh-88px)] max-w-6xl items-center justify-center px-6 py-12"><section className="w-full max-w-md border border-slate-800 bg-slate-900/70 p-8"><p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-300">MarketPulse</p><h1 className="mt-5 text-4xl font-semibold text-white">{isRegister ? 'Create your account' : 'Welcome back'}</h1><p className="mt-3 text-slate-400">{isRegister ? 'Start with a clearer view of what changed.' : 'Return to your market intelligence workspace.'}</p><form className="mt-8 space-y-5" onSubmit={submit}>{isRegister ? <label className="block text-sm text-slate-300">Name<input required minLength={2} maxLength={100} value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full border border-slate-700 bg-slate-950 px-4 py-3 text-white" /></label> : null}<label className="block text-sm text-slate-300">Email<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full border border-slate-700 bg-slate-950 px-4 py-3 text-white" /></label><label className="block text-sm text-slate-300">Password<input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full border border-slate-700 bg-slate-950 px-4 py-3 text-white" /></label>{error ? <p className="text-sm text-rose-300" role="alert">{error}</p> : null}<button disabled={pending} className="w-full bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-60">{pending ? 'Please wait...' : isRegister ? 'Create account' : 'Log in'}</button></form><p className="mt-6 text-sm text-slate-400">{isRegister ? 'Already have an account?' : 'New to MarketPulse?'} <Link className="font-semibold text-cyan-300" to={isRegister ? '/login' : '/signup'}>{isRegister ? 'Log in' : 'Sign up'}</Link></p></section></main> }
+function Dashboard() { const { user } = useAuth(); return <main className="mx-auto max-w-6xl px-6 py-16 lg:px-10"><p className="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300">Dashboard</p><h1 className="mt-5 text-5xl font-semibold text-white">Good to see you, {user?.name}.</h1><p className="mt-5 max-w-xl text-lg leading-8 text-slate-400">Your market watch begins here. Watchlists and market intelligence arrive in the next product phase.</p></main> }
+function Status() { const [status, setStatus] = useState('Checking backend'); useEffect(() => { fetch(`${backendUrl}/health`).then((response) => response.json() as Promise<HealthResponse>).then((health) => setStatus(health.status === 'UP' ? 'Backend Connected' : 'Backend Unavailable')).catch(() => setStatus('Backend Unavailable')) }, []); return <main className="mx-auto max-w-6xl px-6 py-16"><span className="rounded-full border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-300">{status}</span></main> }
+function ProtectedRoute({ children }: { children: ReactNode }) { return useAuth().user ? <>{children}</> : <Navigate to="/login" replace /> }
+function PublicRoute({ children }: { children: ReactNode }) { return useAuth().user ? <Navigate to="/dashboard" replace /> : <>{children}</> }
+function AppRoutes() { return <Shell><Routes><Route path="/" element={<Navigate to="/dashboard" replace />} /><Route path="/login" element={<PublicRoute><AuthCard mode="login" /></PublicRoute>} /><Route path="/signup" element={<PublicRoute><AuthCard mode="register" /></PublicRoute>} /><Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /><Route path="/status" element={<Status />} /><Route path="*" element={<Navigate to="/dashboard" replace />} /></Routes></Shell> }
+export default function App() { return <AuthProvider><AppRoutes /></AuthProvider> }
