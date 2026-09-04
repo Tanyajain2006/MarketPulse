@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
     "mermaid": "latest",
     "react": "latest",
     "react-dom": "latest",
@@ -17,6 +16,8 @@
     "recharts": "latest"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@vitejs/plugin-react": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "tailwindcss": "latest",
