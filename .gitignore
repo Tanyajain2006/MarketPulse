@@ -1,0 +1,48 @@
+# Operating system
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.iml
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and local runtime files
+*.log
+*.pid
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+coverage/
+
+# Java / Maven
+backend/target/
+*.class
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local data and generated files
+data/*
+!data/.gitkeep
+
+# OS/editor temporary files
+*.swp
+*.swo
+*~
