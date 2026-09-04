@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: marketpulse-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/marketpulse}
+    username: ${SPRING_DATASOURCE_USERNAME:marketpulse}
+    password: ${SPRING_DATASOURCE_PASSWORD:marketpulse_local}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  frontend-origin: ${APP_FRONTEND_ORIGIN:http://localhost:5173}
