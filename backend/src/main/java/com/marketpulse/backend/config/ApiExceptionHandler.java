@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.marketpulse.backend.auth.EmailAlreadyRegisteredException;
 import com.marketpulse.backend.auth.InvalidCredentialsException;
+import com.marketpulse.backend.watchlist.DuplicateTickerException;
+import com.marketpulse.backend.watchlist.WatchlistNotFoundException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -18,6 +20,10 @@ public class ApiExceptionHandler {
     ResponseEntity<Map<String, String>> duplicateEmail() { return error(HttpStatus.CONFLICT, "An account with that email already exists."); }
     @ExceptionHandler(InvalidCredentialsException.class)
     ResponseEntity<Map<String, String>> invalidCredentials() { return error(HttpStatus.UNAUTHORIZED, "Invalid email or password."); }
+    @ExceptionHandler(WatchlistNotFoundException.class)
+    ResponseEntity<Map<String, String>> watchlistNotFound() { return error(HttpStatus.NOT_FOUND, "Watchlist not found."); }
+    @ExceptionHandler(DuplicateTickerException.class)
+    ResponseEntity<Map<String, String>> duplicateTicker() { return error(HttpStatus.CONFLICT, "That ticker is already in this watchlist."); }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<Map<String, String>> validation(MethodArgumentNotValidException exception) {
         String message = exception.getBindingResult().getFieldErrors().stream().map(error -> error.getField() + ": " + error.getDefaultMessage()).collect(Collectors.joining(", "));
