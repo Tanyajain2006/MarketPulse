@@ -18,6 +18,7 @@ import com.marketpulse.backend.user.User;
 import com.marketpulse.backend.user.UserRepository;
 import com.marketpulse.backend.watchlist.WatchlistDtos.AddWatchlistItemRequest;
 import com.marketpulse.backend.watchlist.WatchlistDtos.CreateWatchlistRequest;
+import com.marketpulse.backend.watchlist.WatchlistDtos.WatchlistResponse;
 
 @ExtendWith(MockitoExtension.class)
 class WatchlistServiceTest {
@@ -61,5 +62,31 @@ class WatchlistServiceTest {
         assertThatThrownBy(() -> service.addItem("ada@example.com", 7L, new AddWatchlistItemRequest("aapl")))
                 .isInstanceOf(DuplicateTickerException.class);
         verify(items, never()).save(any(WatchlistItem.class));
+    }
+
+    @Test
+    void normalizesAndPersistsTicker() {
+        User user = new User("Ada", "ada@example.com", "hash");
+        Watchlist watchlist = new Watchlist(user, "Growth");
+        when(watchlists.findByIdAndUserEmail(7L, "ada@example.com")).thenReturn(Optional.of(watchlist));
+        when(instruments.findByTickerIgnoreCase("AAPL")).thenReturn(Optional.empty());
+        when(items.saveAndFlush(any(WatchlistItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        WatchlistResponse response = service.addItem("ada@example.com", 7L, new AddWatchlistItemRequest(" aapl "));
+
+        assertThat(response.items()).extracting(WatchlistDtos.WatchlistItemResponse::ticker).containsExactly("AAPL");
+    }
+
+    @Test
+    void removesNormalizedTickerFromOwnedWatchlist() {
+        User user = new User("Ada", "ada@example.com", "hash");
+        Watchlist watchlist = new Watchlist(user, "Growth");
+        watchlist.getItems().add(new WatchlistItem(watchlist, "AAPL"));
+        when(watchlists.findByIdAndUserEmail(7L, "ada@example.com")).thenReturn(Optional.of(watchlist));
+
+        WatchlistResponse response = service.removeItem("ada@example.com", 7L, " aapl ");
+
+        verify(items).deleteByWatchlistIdAndTicker(7L, "AAPL");
+        assertThat(response.items()).isEmpty();
     }
 }

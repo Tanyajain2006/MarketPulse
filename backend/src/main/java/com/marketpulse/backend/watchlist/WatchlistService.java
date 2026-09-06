@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,9 +69,14 @@ public class WatchlistService {
         String ticker = cleanTicker(request.ticker());
         if (items.existsByWatchlistIdAndTicker(id, ticker)) throw new DuplicateTickerException();
         Instrument instrument = instruments.findByTickerIgnoreCase(ticker).orElse(null);
-        watchlist.getItems().add(instrument == null
-            ? items.save(new WatchlistItem(watchlist, ticker))
-            : items.save(new WatchlistItem(watchlist, instrument)));
+        WatchlistItem item = instrument == null
+            ? new WatchlistItem(watchlist, ticker)
+            : new WatchlistItem(watchlist, instrument);
+        try {
+            watchlist.getItems().add(items.saveAndFlush(item));
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateTickerException();
+        }
         watchlist.touch();
         return response(watchlist);
     }
@@ -102,6 +108,7 @@ public class WatchlistService {
     public WatchlistResponse removeItem(String email, Long id, String ticker) {
         Watchlist watchlist = findOwned(email, id);
         String normalizedTicker = cleanTicker(ticker);
+        items.deleteByWatchlistIdAndTicker(id, normalizedTicker);
         watchlist.getItems().removeIf(item -> item.getTicker().equals(normalizedTicker));
         watchlist.touch();
         return response(watchlist);
