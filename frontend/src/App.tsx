@@ -20,7 +20,7 @@ function Shell({ children }: { children: ReactNode }) {
 
     return (
         <div className={isAuthRoute ? 'min-h-screen bg-[#fbfcfd]' : 'min-h-screen bg-[#f5f2ea]'}>
-            <header className={isAuthRoute ? 'border-b border-[#e5ebf1] bg-white/90' : 'border-b border-[#d9d8cf] bg-[#f5f2ea]'}>
+            {!isWorkspaceRoute && <header className={isAuthRoute ? 'border-b border-[#e5ebf1] bg-white/90' : 'border-b border-[#d9d8cf] bg-[#f5f2ea]'}>
                 <nav className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-6 sm:px-10 lg:px-14">
                     {isWorkspaceRoute ? <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-[#6d756d]">Market intelligence workspace</p> : <Link className={isAuthRoute ? 'text-lg font-semibold tracking-tight text-[#102d4e]' : 'text-lg font-semibold tracking-tight text-white'} to={user ? '/dashboard' : '/login'}>{isAuthRoute ? <span className="font-display">Market<span className="text-[#18a8c7]">Pulse</span></span> : <>Market<span className="text-cyan-300">Pulse</span></>}</Link>}
 
@@ -45,7 +45,7 @@ function Shell({ children }: { children: ReactNode }) {
                         </div>
                     )}
                 </nav>
-            </header>
+            </header>}
 
             {children}
         </div>
