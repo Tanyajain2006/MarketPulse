@@ -4,9 +4,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 
 @Entity
-@Table(name = "instruments")
+@Table(name = "instruments", indexes = @Index(name = "idx_instrument_company_name", columnList = "company_name"))
 public class Instrument {
     @Id
     @Column(length = 15)

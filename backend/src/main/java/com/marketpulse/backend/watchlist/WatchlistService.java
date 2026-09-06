@@ -19,6 +19,8 @@ import com.marketpulse.backend.watchlist.WatchlistDtos.RenameWatchlistRequest;
 import com.marketpulse.backend.watchlist.WatchlistDtos.WatchlistItemResponse;
 import com.marketpulse.backend.watchlist.WatchlistDtos.WatchlistResponse;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class WatchlistService {
     private final WatchlistRepository watchlists;
@@ -68,10 +70,8 @@ public class WatchlistService {
         Watchlist watchlist = findOwned(email, id);
         String ticker = cleanTicker(request.ticker());
         if (items.existsByWatchlistIdAndTicker(id, ticker)) throw new DuplicateTickerException();
-        Instrument instrument = instruments.findByTickerIgnoreCase(ticker).orElse(null);
-        WatchlistItem item = instrument == null
-            ? new WatchlistItem(watchlist, ticker)
-            : new WatchlistItem(watchlist, instrument);
+        Instrument instrument = instruments.findByTickerIgnoreCase(ticker).orElseThrow(EntityNotFoundException::new);
+        WatchlistItem item = new WatchlistItem(watchlist, instrument);
         try {
             watchlist.getItems().add(items.saveAndFlush(item));
         } catch (DataIntegrityViolationException exception) {

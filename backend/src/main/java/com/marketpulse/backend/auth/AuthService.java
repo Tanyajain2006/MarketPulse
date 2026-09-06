@@ -41,6 +41,12 @@ public class AuthService {
         return response(user);
     }
 
+    @Transactional(readOnly = true)
+    public UserResponse current(String email) {
+        return users.findByEmail(normalize(email)).map(user -> new UserResponse(user.getId(), user.getName(), user.getEmail()))
+                .orElseThrow(InvalidCredentialsException::new);
+    }
+
     private AuthResponse response(User user) {
         return new AuthResponse(jwtService.generateToken(user.getEmail()),
                 new UserResponse(user.getId(), user.getName(), user.getEmail()));

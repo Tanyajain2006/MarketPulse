@@ -8,10 +8,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "market_snapshots")
+@Table(name = "market_snapshots", indexes = {
+    @Index(name = "idx_snapshot_ticker_timestamp", columnList = "ticker,timestamp"),
+    @Index(name = "idx_snapshot_timestamp", columnList = "timestamp")
+}, uniqueConstraints = @UniqueConstraint(name = "uk_snapshot_identity", columnNames = { "ticker", "timestamp" }))
 public class MarketSnapshot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

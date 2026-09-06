@@ -14,6 +14,8 @@ import com.marketpulse.backend.auth.InvalidCredentialsException;
 import com.marketpulse.backend.watchlist.DuplicateTickerException;
 import com.marketpulse.backend.watchlist.WatchlistNotFoundException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestControllerAdvice
 public class ApiExceptionHandler {
     @ExceptionHandler(EmailAlreadyRegisteredException.class)
@@ -29,5 +31,11 @@ public class ApiExceptionHandler {
         String message = exception.getBindingResult().getFieldErrors().stream().map(error -> error.getField() + ": " + error.getDefaultMessage()).collect(Collectors.joining(", "));
         return error(HttpStatus.BAD_REQUEST, message);
     }
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<Map<String, String>> invalidArgument(IllegalArgumentException exception) {
+        return error(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+    @ExceptionHandler(EntityNotFoundException.class)
+    ResponseEntity<Map<String, String>> entityNotFound() { return error(HttpStatus.NOT_FOUND, "Resource not found."); }
     private ResponseEntity<Map<String, String>> error(HttpStatus status, String message) { return ResponseEntity.status(status).body(Map.of("error", message)); }
 }

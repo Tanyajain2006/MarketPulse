@@ -12,4 +12,6 @@ public interface WatchlistRepository extends JpaRepository<Watchlist, Long> {
 
     @EntityGraph(attributePaths = "items")
     Optional<Watchlist> findByIdAndUserEmail(Long id, String email);
+
+    Optional<Watchlist> findByUserEmailAndName(String email, String name);
 }

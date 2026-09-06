@@ -69,7 +69,8 @@ class WatchlistServiceTest {
         User user = new User("Ada", "ada@example.com", "hash");
         Watchlist watchlist = new Watchlist(user, "Growth");
         when(watchlists.findByIdAndUserEmail(7L, "ada@example.com")).thenReturn(Optional.of(watchlist));
-        when(instruments.findByTickerIgnoreCase("AAPL")).thenReturn(Optional.empty());
+        when(instruments.findByTickerIgnoreCase("AAPL"))
+            .thenReturn(Optional.of(new Instrument("AAPL", "Apple Inc.", "NASDAQ")));
         when(items.saveAndFlush(any(WatchlistItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         WatchlistResponse response = service.addItem("ada@example.com", 7L, new AddWatchlistItemRequest(" aapl "));

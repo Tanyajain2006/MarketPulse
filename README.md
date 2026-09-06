@@ -46,7 +46,7 @@ MarketPulse/
 - MySQL is the only planned database. Redis, MongoDB, and Kafka are intentionally out of scope.
 - Historical CSV files are the initial market-data source. A provider abstraction will allow a real market-data provider to be added later.
 
-Authentication, database-backed watchlists, opt-in demo-data ingestion, and persisted market snapshots are implemented. AI, NLP, recommendations, and news narratives remain future work.
+Authentication, database-backed watchlists, persisted market/news reference data, preferences, checkpoint-aware dashboard calculations, and opt-in demo-data ingestion are implemented. AI, NLP, and recommendations remain future work.
 
 ## Prerequisites
 
@@ -140,7 +140,7 @@ POST /api/auth/register
 POST /api/auth/login
 ```
 
-Registration creates a unique email-based account and returns a JWT with the public user profile. Login returns the same shape after verifying the BCrypt hash. The frontend keeps the session token in browser session storage, never stores plaintext passwords, redirects unauthenticated users to `/login`, and protects `/dashboard`.
+Registration creates a unique email-based account and returns a JWT with the public user profile. Login returns the same shape after verifying the BCrypt hash. `GET /api/auth/me` returns the current public profile and `POST /api/auth/logout` completes the stateless logout contract; the client removes its JWT. The frontend keeps the session token in browser session storage, never stores plaintext passwords, redirects unauthenticated users to `/login`, and protects `/dashboard`.
 
 Set `JWT_SECRET` in `backend/.env` to a private value of at least 32 bytes. It must remain backend-only and must never be added to frontend environment variables.
 
@@ -152,7 +152,8 @@ The repository currently provides:
 - JSON backend health endpoint and frontend-to-backend connectivity status.
 - JWT authentication with registration, login, logout, protected dashboard routing, validation, and JSON error responses.
 - Ownership-scoped watchlist management at `/api/watchlists` and the `/watchlists` React workspace.
-- Opt-in idempotent CSV import for `data/watchlist_seed.csv` and `data/market_snapshots.csv`.
+- Opt-in idempotent CSV import for all 10,000 rows in `data/watchlist_seed.csv`, `data/market_snapshots.csv`, and `data/news_events.csv`.
+- Queryable market, news, research, preferences, and checkpoint-aware dashboard APIs.
 - React, TypeScript, Vite, Tailwind CSS, and React Router application shell.
 - Minimal FastAPI service with a health endpoint.
 - MySQL Compose service with a persistent named volume and health check.
@@ -163,12 +164,26 @@ The backend importer is disabled by default. To load the supplied CSV data into 
 
 ```text
 MARKETPULSE_DEMO_DATA_ENABLED=true
-MARKETPULSE_DATA_DIR=../data
-MARKETPULSE_DEMO_USER_EMAIL=your-registered-email@example.com
-MARKETPULSE_DEMO_WATCHLIST_NAME=My Tech Watchlist
+MARKETPULSE_DATA_DIR=data
+MARKETPULSE_DEMO_USER_EMAIL=demo@marketpulse.local
+MARKETPULSE_DEMO_PASSWORD=change-this-local-demo-password
 ```
 
-The importer creates the instrument catalog and market snapshots idempotently, then attaches the first seeded watchlist's instruments to the configured existing user. It does not create users or reinsert duplicate watchlist items. `news_events.csv` is reserved for the later narrative/news feature.
+Start the backend once with those variables enabled. The importer creates the local demo user if it does not exist, imports all 10,000 market snapshots and all 10,000 news events, builds the instrument catalog from the complete 10,000-row watchlist seed, and attaches every distinct seeded watchlist group to the demo user. Natural keys and database constraints make repeated runs idempotent. Do not use the documented local demo password outside development.
+
+Available data APIs include:
+
+```text
+GET  /api/market/latest?tickers=AAPL,NVDA
+GET  /api/market/{ticker}/history?limit=100
+GET  /api/news/latest?tickers=AAPL,NVDA
+GET  /api/news/{ticker}?limit=50
+GET  /api/dashboard/overview
+POST /api/dashboard/checkpoint
+GET  /api/preferences
+PATCH /api/preferences
+GET  /api/research/search?q=NVDA
+```
 
 ## License
 

@@ -63,4 +63,5 @@ public class User {
     public String getName() { return name; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
+    public void rename(String name) { this.name = name; }
 }

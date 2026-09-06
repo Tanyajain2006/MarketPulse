@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
@@ -16,7 +17,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "watchlist_items", uniqueConstraints = @UniqueConstraint(name = "uk_watchlist_ticker", columnNames = {"watchlist_id", "ticker"}))
+@Table(name = "watchlist_items", indexes = @Index(name = "idx_watchlist_item_ticker", columnList = "ticker"), uniqueConstraints = @UniqueConstraint(name = "uk_watchlist_ticker", columnNames = {"watchlist_id", "ticker"}))
 public class WatchlistItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

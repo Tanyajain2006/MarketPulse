@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,9 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.marketpulse.backend.market.NewsEvent;
+import com.marketpulse.backend.market.NewsEventRepository;
 import com.marketpulse.backend.user.User;
 import com.marketpulse.backend.user.UserRepository;
 
@@ -31,21 +35,25 @@ public class DemoDataImporter implements CommandLineRunner {
     private final WatchlistItemRepository items;
     private final InstrumentRepository instruments;
     private final MarketSnapshotRepository snapshots;
+    private final NewsEventRepository news;
+    private final PasswordEncoder passwordEncoder;
     private final String dataDirectory;
     private final String demoEmail;
-    private final String demoWatchlistName;
+    private final String demoPassword;
 
     public DemoDataImporter(UserRepository users, WatchlistRepository watchlists, WatchlistItemRepository items,
             InstrumentRepository instruments, MarketSnapshotRepository snapshots,
-            org.springframework.core.env.Environment environment) {
+            NewsEventRepository news, PasswordEncoder passwordEncoder, org.springframework.core.env.Environment environment) {
         this.users = users;
         this.watchlists = watchlists;
         this.items = items;
         this.instruments = instruments;
         this.snapshots = snapshots;
+        this.news = news;
+        this.passwordEncoder = passwordEncoder;
         this.dataDirectory = environment.getProperty("app.demo-data.directory", "../data");
-        this.demoEmail = environment.getProperty("app.demo-data.user-email", "");
-        this.demoWatchlistName = environment.getProperty("app.demo-data.watchlist-name", "My Tech Watchlist");
+        this.demoEmail = environment.getProperty("app.demo-data.user-email", "demo@marketpulse.local");
+        this.demoPassword = environment.getProperty("app.demo-data.password", "marketpulse-demo-local");
     }
 
     @Override
@@ -53,7 +61,8 @@ public class DemoDataImporter implements CommandLineRunner {
     public void run(String... args) throws Exception {
         importInstruments();
         importSnapshots();
-        if (!demoEmail.isBlank()) attachWatchlistToConfiguredUser();
+        importNews();
+        if (!demoEmail.isBlank()) attachWatchlistsToConfiguredUser();
         log.info("MarketPulse demo data import completed from {}", dataDirectory);
     }
 
@@ -64,7 +73,7 @@ public class DemoDataImporter implements CommandLineRunner {
             if (row.length < 4) continue;
             catalog.put(row[1].trim().toUpperCase(), new Instrument(row[1].trim().toUpperCase(), row[2].trim(), row[3].trim()));
         }
-        catalog.values().forEach(instrument -> instruments.save(instrument));
+            catalog.values().forEach(instrument -> instruments.save(instrument));
     }
 
     private void importSnapshots() throws IOException {
@@ -80,21 +89,30 @@ public class DemoDataImporter implements CommandLineRunner {
         }
     }
 
-    private void attachWatchlistToConfiguredUser() throws IOException {
-        User user = users.findByEmail(demoEmail.trim().toLowerCase()).orElse(null);
-        if (user == null) {
-            log.info("Skipping demo watchlist attachment; configured user {} does not exist yet", demoEmail);
-            return;
+    private void importNews() throws IOException {
+        Path path = Path.of(dataDirectory, "news_events.csv");
+        for (String[] row : rows(path)) {
+            if (row.length < 6) continue;
+            String ticker = row[1].trim().toUpperCase();
+            var timestamp = LocalDateTime.parse(row[0].trim().replace(' ', 'T')).toInstant(ZoneOffset.UTC);
+            String headline = row[2].trim();
+            if (!news.existsByTickerAndTimestampAndHeadline(ticker, timestamp, headline)) {
+                news.save(new NewsEvent(ticker, timestamp, headline, row[3].trim(), row[4].trim(), new BigDecimal(row[5])));
+            }
         }
+    }
+
+    private void attachWatchlistsToConfiguredUser() throws IOException {
+        User user = users.findByEmail(demoEmail.trim().toLowerCase()).orElseGet(() ->
+                users.save(new User("MarketPulse Demo", demoEmail.trim().toLowerCase(), passwordEncoder.encode(demoPassword))));
         List<String[]> seedRows = rows(Path.of(dataDirectory, "watchlist_seed.csv"));
         if (seedRows.isEmpty()) return;
-        Watchlist watchlist = watchlists.findAllByUserEmailOrderByUpdatedAtDesc(user.getEmail()).stream()
-                .filter(item -> item.getName().equals(demoWatchlistName)).findFirst().orElse(null);
-        if (watchlist == null) watchlist = watchlists.save(new Watchlist(user, demoWatchlistName));
-        final Watchlist targetWatchlist = watchlist;
-        String sourceName = seedRows.get(0)[0];
+        Map<String, Watchlist> targets = new LinkedHashMap<>();
         for (String[] row : seedRows) {
-            if (row.length < 4 || !sourceName.equals(row[0])) continue;
+            if (row.length < 4) continue;
+            String sourceName = row[0].trim();
+            Watchlist targetWatchlist = targets.computeIfAbsent(sourceName, name ->
+                    watchlists.findByUserEmailAndName(user.getEmail(), name).orElseGet(() -> watchlists.save(new Watchlist(user, name))));
             String ticker = row[1].trim().toUpperCase();
             if (!items.existsByWatchlistIdAndTicker(targetWatchlist.getId(), ticker)) {
                 instruments.findByTickerIgnoreCase(ticker).ifPresent(instrument -> items.save(new WatchlistItem(targetWatchlist, instrument)));
