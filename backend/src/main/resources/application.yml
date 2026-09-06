@@ -20,3 +20,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:change-this-local-secret-to-at-least-32-characters}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  demo-data:
+    enabled: ${MARKETPULSE_DEMO_DATA_ENABLED:false}
+    directory: ${MARKETPULSE_DATA_DIR:../data}
+    user-email: ${MARKETPULSE_DEMO_USER_EMAIL:}
+    watchlist-name: ${MARKETPULSE_DEMO_WATCHLIST_NAME:My Tech Watchlist}
