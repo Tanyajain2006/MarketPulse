@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class MarketController {
     private final MarketService market;
     private final MarketDataImportService importer;
+    private final MarketChangeService changes;
 
-    public MarketController(MarketService market, MarketDataImportService importer) {
+    public MarketController(MarketService market, MarketDataImportService importer, MarketChangeService changes) {
         this.market = market;
         this.importer = importer;
+        this.changes = changes;
     }
 
     @PostMapping("/history/import")
@@ -30,6 +32,11 @@ public class MarketController {
     @GetMapping("/{ticker}/latest")
     public MarketSnapshotDtos.SnapshotResponse latest(@PathVariable String ticker) {
         return market.latest(ticker);
+    }
+
+    @GetMapping("/{ticker}/changes")
+    public MarketChangeDtos.ChangeResponse changes(@PathVariable String ticker) {
+        return changes.changes(ticker);
     }
 
     @GetMapping("/{ticker}/history")

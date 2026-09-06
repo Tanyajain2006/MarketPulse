@@ -18,6 +18,23 @@ server:
 marketpulse:
   market-data:
     csv-location: ${MARKETPULSE_MARKET_DATA_CSV_LOCATION:data/historical-market-data.csv}
+  news-data:
+    csv-location: ${MARKETPULSE_NEWS_DATA_CSV_LOCATION:data/news_events.csv}
+  change-engine:
+    baseline-window: ${MARKETPULSE_CHANGE_BASELINE_WINDOW:20}
+    minimum-history: ${MARKETPULSE_CHANGE_MINIMUM_HISTORY:1}
+    volume-anomaly-threshold: ${MARKETPULSE_CHANGE_VOLUME_THRESHOLD:2.0}
+    volatility-anomaly-threshold: ${MARKETPULSE_CHANGE_VOLATILITY_THRESHOLD:25.0}
+    stale-after-hours: ${MARKETPULSE_CHANGE_STALE_AFTER_HOURS:24}
+
+  materiality:
+    price-threshold: ${MARKETPULSE_MATERIALITY_PRICE_THRESHOLD:5}
+    sector-threshold: ${MARKETPULSE_MATERIALITY_SECTOR_THRESHOLD:2}
+    price-weight: ${MARKETPULSE_MATERIALITY_PRICE_WEIGHT:30}
+    volume-weight: ${MARKETPULSE_MATERIALITY_VOLUME_WEIGHT:25}
+    volatility-weight: ${MARKETPULSE_MATERIALITY_VOLATILITY_WEIGHT:20}
+    sector-weight: ${MARKETPULSE_MATERIALITY_SECTOR_WEIGHT:15}
+    peer-weight: ${MARKETPULSE_MATERIALITY_PEER_WEIGHT:10}
 
 app:
   frontend-origin: ${APP_FRONTEND_ORIGIN:http://localhost:5173}

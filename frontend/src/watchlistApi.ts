@@ -10,6 +10,16 @@ export type Watchlist = {
   reviewedAt?: string
 }
 export type Checkpoint = { id: number; watchlistId: number; reviewedAt: string }
+export type SinceReview = {
+  watchlistId: number
+  watchlistName: string
+  reviewedAt: string | null
+  latestObservationTimestamp: string | null
+  marketStatus: string
+  status: string
+  summary: { criticalCount: number; meaningfulCount: number; worthWatchingCount: number; normalCount: number }
+  stocks: { ticker: string; previousObservationTimestamp: string | null; currentObservationTimestamp: string | null; status: string; materialityScore: number | null; classification: string | null; warning: string | null; price: { currentPrice: number | null; percentageChange: number | null }; volume: { multiple: number | null; signal: string; status: string }; volatility: { relativeChange: number | null; signal: string }; relativeMovement: { relativeMovement: number | null; interpretation: string }; peerComparison: { status: string }; contributions: { name: string; contribution: number; status: string }[] }[]
+}
 
 export type MarketData = {
   ticker: string
@@ -38,3 +48,4 @@ export function getMarketData(id: number) { return request<MarketData[]>(`/watch
 export function searchInstruments(query: string) { return request<Instrument[]>(`/watchlists/instruments/search?query=${encodeURIComponent(query)}`) }
 export function getWatchlistCheckpoint(id: number) { return request<Checkpoint | null>(`/watchlists/${id}/checkpoint`) }
 export function markWatchlistReviewed(id: number) { return request<Checkpoint>(`/watchlists/${id}/checkpoint`, { method: 'POST' }) }
+export function getSinceLastReview(id: number) { return request<SinceReview>(`/watchlists/${id}/since-last-review`) }

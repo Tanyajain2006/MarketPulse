@@ -15,6 +15,10 @@ public interface MarketSnapshotRepository extends JpaRepository<MarketSnapshot, 
 
     List<MarketSnapshot> findTop2ByTickerOrderByObservationTimestampDesc(String ticker);
     java.util.Optional<MarketSnapshot> findFirstByTickerAndDataQualityOrderByObservationTimestampDesc(String ticker, String dataQuality);
+        List<MarketSnapshot> findByTickerAndDataQualityAndObservationTimestampBeforeOrderByObservationTimestampDesc(
+            String ticker, String dataQuality, java.time.Instant timestamp, Pageable pageable);
+            java.util.Optional<MarketSnapshot> findFirstByTickerAndDataQualityAndObservationTimestampLessThanEqualOrderByObservationTimestampDesc(
+                String ticker, String dataQuality, java.time.Instant timestamp);
         @Query("select s from MarketSnapshot s where s.ticker = :ticker and s.observationTimestamp >= :from order by s.observationTimestamp desc")
         List<MarketSnapshot> findSinceForTicker(@Param("ticker") String ticker, @Param("from") java.time.Instant from,
             Pageable pageable);

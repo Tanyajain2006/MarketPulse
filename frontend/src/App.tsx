@@ -5,6 +5,7 @@ import Watchlists from './Watchlists'
 import Overview from './Overview'
 import Preferences from './Preferences'
 import ResearchDesk from './ResearchDesk'
+import Investigation from './Investigation'
 import { getHealth } from './workspaceApi'
 
 
@@ -13,7 +14,7 @@ function Shell({ children }: { children: ReactNode }) {
     const navigate = useNavigate();
     const location = useLocation();
     const isAuthRoute = location.pathname === '/login' || location.pathname === '/signup';
-    const isWorkspaceRoute = ['/watchlists', '/dashboard', '/preferences', '/research'].includes(location.pathname);
+    const isWorkspaceRoute = ['/watchlists', '/dashboard', '/preferences', '/research', '/investigations'].some(path => location.pathname.startsWith(path));
 
     const handleLogout = () => {
         logout();
@@ -150,6 +151,7 @@ function AppRoutes() {
 
                 <Route path="/preferences" element={<ProtectedRoute><Preferences /></ProtectedRoute>} />
                 <Route path="/research" element={<ProtectedRoute><ResearchDesk /></ProtectedRoute>} />
+                <Route path="/investigations/:ticker" element={<ProtectedRoute><Investigation /></ProtectedRoute>} />
 
                 <Route
                     path="/status"
