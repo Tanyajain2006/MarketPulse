@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MarketSnapshotRepository extends JpaRepository<MarketSnapshot, Long> {
+    @Query("select distinct s.ticker from MarketSnapshot s order by s.ticker")
+    List<String> findDistinctTickers();
+
     boolean existsByTickerAndObservationTimestamp(String ticker, java.time.Instant timestamp);
 
     List<MarketSnapshot> findTop2ByTickerOrderByObservationTimestampDesc(String ticker);

@@ -31,6 +31,15 @@ public class MarketService {
     }
 
     @Transactional(readOnly = true)
+    public List<MarketSnapshotDtos.SnapshotResponse> latestTickers() {
+        List<String> tickers = snapshots.findDistinctTickers();
+        return tickers.isEmpty() ? List.of() : latest(tickers);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> availableTickers() { return snapshots.findDistinctTickers(); }
+
+    @Transactional(readOnly = true)
     public List<MarketSnapshotDtos.SnapshotResponse> history(String ticker, Instant from, Instant to, int limit) {
         String normalized = normalizeTicker(ticker);
         if (from == null && to == null) {

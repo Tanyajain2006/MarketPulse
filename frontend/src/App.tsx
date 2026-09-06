@@ -2,16 +2,18 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AuthProvider, AuthScreen, useAuth } from './auth'
 import Watchlists from './Watchlists'
+import Overview from './Overview'
+import Preferences from './Preferences'
+import ResearchDesk from './ResearchDesk'
+import { getHealth } from './workspaceApi'
 
-type HealthResponse = { status: string; service: string }
-const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
 function Shell({ children }: { children: ReactNode }) {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const isAuthRoute = location.pathname === '/login' || location.pathname === '/signup';
-    const isWorkspaceRoute = location.pathname === '/watchlists' || location.pathname === '/dashboard';
+    const isWorkspaceRoute = ['/watchlists', '/dashboard', '/preferences', '/research'].includes(location.pathname);
 
     const handleLogout = () => {
         logout();
@@ -58,16 +60,9 @@ function Status() {
     useEffect(() => {
         const checkBackendHealth = async () => {
             try {
-                const response = await fetch(`${backendUrl}/health`);
-
-                if (!response.ok) {
-                    throw new Error('Health check failed');
-                }
-
-                const health = (await response.json()) as HealthResponse;
-
+                const health = await getHealth();
                 setStatus(
-                    health.status === 'UP'
+                    health.status === 'UP' && health.database === 'UP'
                         ? 'Backend Connected'
                         : 'Backend Unavailable'
                 );
@@ -139,7 +134,7 @@ function AppRoutes() {
                     path="/dashboard"
                     element={
                         <ProtectedRoute>
-                            <Watchlists />
+                            <Overview />
                         </ProtectedRoute>
                     }
                 />
@@ -152,6 +147,9 @@ function AppRoutes() {
                         </ProtectedRoute>
                     }
                 />
+
+                <Route path="/preferences" element={<ProtectedRoute><Preferences /></ProtectedRoute>} />
+                <Route path="/research" element={<ProtectedRoute><ResearchDesk /></ProtectedRoute>} />
 
                 <Route
                     path="/status"

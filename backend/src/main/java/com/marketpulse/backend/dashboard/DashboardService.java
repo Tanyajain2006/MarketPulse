@@ -47,7 +47,8 @@ public class DashboardService {
                 .orElse(null);
         Instant checkpoint = checkpoints.findByUserEmail(email).map(UserCheckpoint::getObservedAt).orElse(Instant.EPOCH);
         if (watchlist == null || watchlist.getItems().isEmpty()) {
-            return new DashboardDtos.Overview(watchlist == null ? null : watchlist.getName(), checkpoint, null,
+            return new DashboardDtos.Overview(watchlist == null ? null : watchlist.getName(),
+                    watchlist == null ? 0 : watchlist.getItems().size(), checkpoint, null,
                     new DashboardDtos.Summary(0, 0, 0, 0), List.of());
         }
         List<DashboardDtos.Change> changes = new ArrayList<>();
@@ -65,7 +66,7 @@ public class DashboardService {
         int meaningful = (int) changes.stream().filter(change -> "MEANINGFUL".equals(change.classification())).count();
         int normal = (int) changes.stream().filter(change -> "NORMAL".equals(change.classification())).count();
         Instant latest = changes.stream().map(DashboardDtos.Change::observedAt).max(Comparator.naturalOrder()).orElse(null);
-        return new DashboardDtos.Overview(watchlist.getName(), checkpoint, latest,
+        return new DashboardDtos.Overview(watchlist.getName(), watchlist.getItems().size(), checkpoint, latest,
                 new DashboardDtos.Summary(critical, meaningful, normal, meaningful + critical), changes);
     }
 

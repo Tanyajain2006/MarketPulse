@@ -14,6 +14,6 @@ public final class DashboardDtos {
             BigDecimal volatility, BigDecimal sectorChange, String classification, int materiality,
             String headline, String eventType, BigDecimal sentimentScore) { }
 
-    public record Overview(String watchlistName, Instant checkpoint, Instant latestObservation, Summary summary,
-            List<Change> changes) { }
+    public record Overview(String watchlistName, int tickerCount, Instant checkpoint, Instant latestObservation,
+            Summary summary, List<Change> changes) { }
 }

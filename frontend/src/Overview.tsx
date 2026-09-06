@@ -1,0 +1,14 @@
+import { useEffect, useState } from 'react'
+import { getOverview, type Overview } from './workspaceApi'
+import { WorkspaceLayout } from './Watchlists'
+
+function formatNumber(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value) }
+function formatDate(value?: string) { return value ? new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'No observation yet' }
+
+export default function OverviewPage() {
+  const [overview, setOverview] = useState<Overview | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  useEffect(() => { getOverview().then(setOverview).catch((reason) => setError(reason instanceof Error ? reason.message : 'Unable to load overview.')).finally(() => setLoading(false)) }, [])
+  return <WorkspaceLayout><main className="mp-content"><div className="mp-intro"><p className="mp-eyebrow">Workspace overview</p><h1>Overview</h1><p>{overview?.watchlistName ? `Latest database observations for ${overview.watchlistName}.` : 'Your selected watchlist will appear here once it has tickers.'}</p></div>{loading && <div className="mp-panel">Loading overview...</div>}{error && <div className="mp-alert" role="alert">{error}</div>}{overview && <><div className="mp-stat-grid"><div className="mp-stat"><span>Tickers</span><strong>{overview.tickerCount}</strong></div><div className="mp-stat"><span>Needs attention</span><strong>{overview.summary.needsAttention}</strong></div><div className="mp-stat"><span>Worth watching</span><strong>{overview.summary.worthWatching}</strong></div><div className="mp-stat"><span>No material change</span><strong>{overview.summary.noMaterialChange}</strong></div></div><section className="mp-panel"><div className="mp-panel-head"><div><p className="mp-eyebrow">Change ledger</p><h2>Observed movement</h2></div><span className="mp-muted">Updated {formatDate(overview.latestObservation)}</span></div>{overview.changes.length ? <div className="mp-table-wrap"><table className="mp-table"><thead><tr><th>Ticker</th><th>Price</th><th>Change</th><th>Volume</th><th>Volatility</th><th>Sector</th><th>Observed</th></tr></thead><tbody>{overview.changes.map((change) => <tr key={`${change.ticker}-${change.observedAt}`}><td><strong>{change.ticker}</strong><small>{change.companyName || 'Instrument'}</small></td><td>{formatNumber(change.price)}</td><td className={change.priceChangePercent >= 0 ? 'mp-positive' : 'mp-negative'}>{change.priceChangePercent.toFixed(2)}%</td><td>{formatNumber(change.volume)}</td><td>{change.volatility.toFixed(3)}</td><td>{change.sectorChange.toFixed(3)}</td><td>{formatDate(change.observedAt)}</td></tr>)}</tbody></table></div> : <div className="mp-empty"><h2>No historical observations</h2><p>Import historical data and add a matching ticker to a watchlist.</p></div>}</section></>}</main></WorkspaceLayout>
+}

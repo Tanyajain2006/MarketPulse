@@ -1,0 +1,15 @@
+import { useEffect, useState } from 'react'
+import { getHealth, getPreferences, updatePreferences, type Health, type Preference } from './workspaceApi'
+import { WorkspaceLayout } from './Watchlists'
+
+export default function PreferencesPage() {
+  const [preference, setPreference] = useState<Preference | null>(null)
+  const [health, setHealth] = useState<Health | null>(null)
+  const [name, setName] = useState('')
+  const [density, setDensity] = useState<Preference['readingDensity']>('COMFORTABLE')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  useEffect(() => { Promise.all([getPreferences(), getHealth()]).then(([next, status]) => { setPreference(next); setName(next.displayName); setDensity(next.readingDensity); setHealth(status) }).catch((reason) => setError(reason instanceof Error ? reason.message : 'Unable to load preferences.')) }, [])
+  const save = async () => { setMessage(''); setError(''); try { const next = await updatePreferences({ displayName: name, readingDensity: density }); setPreference(next); setName(next.displayName); setDensity(next.readingDensity); setMessage('Preferences saved to the workspace.') } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to save preferences.') } }
+  return <WorkspaceLayout><main className="mp-content"><div className="mp-intro"><p className="mp-eyebrow">Workspace settings</p><h1>Preferences</h1><p>These settings are stored with your authenticated MarketPulse account.</p></div>{error && <div className="mp-alert" role="alert">{error}</div>}<section className="mp-settings-grid"><div className="mp-panel"><p className="mp-eyebrow">Profile</p><h2>Account details</h2><label className="mp-field">Display name<input value={name} onChange={(event) => setName(event.target.value)} disabled={!preference} /></label><label className="mp-field">Email<input value={preference?.email || ''} readOnly /></label><button type="button" className="mp-primary-button" onClick={save} disabled={!preference}>Save changes</button>{message && <p className="mp-positive">{message}</p>}</div><div className="mp-panel"><p className="mp-eyebrow">Reading experience</p><h2>Density</h2><div className="mp-density-options">{(['COMPACT', 'COMFORTABLE', 'EXPANDED'] as const).map((option) => <label key={option} className={density === option ? 'is-selected' : ''}><input type="radio" name="density" checked={density === option} onChange={() => setDensity(option)} />{option.toLowerCase()}</label>)}</div><p className="mp-eyebrow mp-settings-status">Connection</p><h2 className="mp-status-line"><span className={health?.status === 'UP' ? 'mp-status-dot is-up' : 'mp-status-dot'} />{health?.status === 'UP' ? 'Operational' : health ? 'Degraded' : 'Checking'}</h2><p className="mp-muted">Database: {health?.database || 'checking'}</p></div></section></main></WorkspaceLayout>
+}
