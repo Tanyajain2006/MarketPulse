@@ -46,7 +46,7 @@ MarketPulse/
 - MySQL is the only planned database. Redis, MongoDB, and Kafka are intentionally out of scope.
 - Historical CSV files are the initial market-data source. A provider abstraction will allow a real market-data provider to be added later.
 
-Authentication, watchlists, market-data ingestion, AI, NLP, recommendations, and business logic are not implemented yet.
+Authentication, database-backed watchlists, opt-in demo-data ingestion, and persisted market snapshots are implemented. AI, NLP, recommendations, and news narratives remain future work.
 
 ## Prerequisites
 
@@ -151,11 +151,24 @@ The repository currently provides:
 - Spring Boot API with environment-based MySQL and Hibernate configuration.
 - JSON backend health endpoint and frontend-to-backend connectivity status.
 - JWT authentication with registration, login, logout, protected dashboard routing, validation, and JSON error responses.
+- Ownership-scoped watchlist management at `/api/watchlists` and the `/watchlists` React workspace.
+- Opt-in idempotent CSV import for `data/watchlist_seed.csv` and `data/market_snapshots.csv`.
 - React, TypeScript, Vite, Tailwind CSS, and React Router application shell.
 - Minimal FastAPI service with a health endpoint.
 - MySQL Compose service with a persistent named volume and health check.
 
-The next implementation phases should add database migrations and a market-data source abstraction before product workflows are built.
+### Demo data import
+
+The backend importer is disabled by default. To load the supplied CSV data into MySQL, set these backend environment variables before starting Spring Boot:
+
+```text
+MARKETPULSE_DEMO_DATA_ENABLED=true
+MARKETPULSE_DATA_DIR=../data
+MARKETPULSE_DEMO_USER_EMAIL=your-registered-email@example.com
+MARKETPULSE_DEMO_WATCHLIST_NAME=My Tech Watchlist
+```
+
+The importer creates the instrument catalog and market snapshots idempotently, then attaches the first seeded watchlist's instruments to the configured existing user. It does not create users or reinsert duplicate watchlist items. `news_events.csv` is reserved for the later narrative/news feature.
 
 ## License
 

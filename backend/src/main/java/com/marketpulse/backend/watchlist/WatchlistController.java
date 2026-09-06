@@ -1,11 +1,7 @@
 package com.marketpulse.backend.watchlist;
 
-import com.marketpulse.backend.watchlist.WatchlistDtos.AddWatchlistItemRequest;
-import com.marketpulse.backend.watchlist.WatchlistDtos.CreateWatchlistRequest;
-import com.marketpulse.backend.watchlist.WatchlistDtos.RenameWatchlistRequest;
-import com.marketpulse.backend.watchlist.WatchlistDtos.WatchlistResponse;
-import jakarta.validation.Valid;
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.marketpulse.backend.watchlist.WatchlistDtos.AddWatchlistItemRequest;
+import com.marketpulse.backend.watchlist.WatchlistDtos.CreateWatchlistRequest;
+import com.marketpulse.backend.watchlist.WatchlistDtos.RenameWatchlistRequest;
+import com.marketpulse.backend.watchlist.WatchlistDtos.WatchlistResponse;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/watchlists")
@@ -53,5 +56,20 @@ public class WatchlistController {
     @DeleteMapping("/{id}/items/{ticker}")
     public WatchlistResponse removeItem(Authentication authentication, @PathVariable Long id, @PathVariable String ticker) {
         return service.removeItem(authentication.getName(), id, ticker);
+    }
+
+    @GetMapping("/{id}/market-data")
+    public List<WatchlistDtos.MarketDataResponse> marketData(Authentication authentication, @PathVariable Long id) {
+        return service.marketData(authentication.getName(), id);
+    }
+
+    @GetMapping("/instruments/search")
+    public List<WatchlistDtos.InstrumentResponse> search(@org.springframework.web.bind.annotation.RequestParam String query) {
+        return service.searchInstruments(query);
+    }
+
+    @PostMapping("/{id}/checkpoint")
+    public WatchlistResponse checkpoint(Authentication authentication, @PathVariable Long id) {
+        return service.markReviewed(authentication.getName(), id);
     }
 }

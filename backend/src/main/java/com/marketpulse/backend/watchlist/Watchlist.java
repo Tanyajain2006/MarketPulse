@@ -40,6 +40,9 @@ public class Watchlist {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "reviewed_at")
+    private Instant reviewedAt;
+
     @OneToMany(mappedBy = "watchlist", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<WatchlistItem> items = new ArrayList<>();
 
@@ -67,5 +70,7 @@ public class Watchlist {
     public void touch() { updatedAt = Instant.now(); }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    public Instant getReviewedAt() { return reviewedAt; }
+    public void markReviewed() { reviewedAt = Instant.now(); }
     public List<WatchlistItem> getItems() { return items; }
 }
