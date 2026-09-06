@@ -9,6 +9,7 @@ export type Watchlist = {
   updatedAt: string
   reviewedAt?: string
 }
+export type Checkpoint = { id: number; watchlistId: number; reviewedAt: string }
 
 export type MarketData = {
   ticker: string
@@ -35,4 +36,5 @@ export function addTicker(id: number, ticker: string) { return request<Watchlist
 export function removeTicker(id: number, ticker: string) { return request<Watchlist>(`/watchlists/${id}/items/${encodeURIComponent(ticker)}`, { method: 'DELETE' }) }
 export function getMarketData(id: number) { return request<MarketData[]>(`/watchlists/${id}/market-data`) }
 export function searchInstruments(query: string) { return request<Instrument[]>(`/watchlists/instruments/search?query=${encodeURIComponent(query)}`) }
-export function markWatchlistReviewed(id: number) { return request<Watchlist>(`/watchlists/${id}/checkpoint`, { method: 'POST' }) }
+export function getWatchlistCheckpoint(id: number) { return request<Checkpoint | null>(`/watchlists/${id}/checkpoint`) }
+export function markWatchlistReviewed(id: number) { return request<Checkpoint>(`/watchlists/${id}/checkpoint`, { method: 'POST' }) }

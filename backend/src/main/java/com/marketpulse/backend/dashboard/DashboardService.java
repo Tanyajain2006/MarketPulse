@@ -45,7 +45,9 @@ public class DashboardService {
     public DashboardDtos.Overview overview(String email) {
         Watchlist watchlist = watchlists.findAllByUserEmailOrderByUpdatedAtDesc(email).stream().findFirst()
                 .orElse(null);
-        Instant checkpoint = checkpoints.findByUserEmail(email).map(UserCheckpoint::getObservedAt).orElse(Instant.EPOCH);
+        Instant checkpoint = watchlist == null ? Instant.EPOCH
+                : checkpoints.findByUserEmailAndWatchlistId(email, watchlist.getId())
+                        .map(UserCheckpoint::getReviewedAt).orElse(Instant.EPOCH);
         if (watchlist == null || watchlist.getItems().isEmpty()) {
             return new DashboardDtos.Overview(watchlist == null ? null : watchlist.getName(),
                     watchlist == null ? 0 : watchlist.getItems().size(), checkpoint, null,
@@ -73,9 +75,12 @@ public class DashboardService {
     @Transactional
     public Instant checkpoint(String email) {
         User user = users.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found."));
+        Watchlist watchlist = watchlists.findAllByUserEmailOrderByUpdatedAtDesc(email).stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Watchlist not found."));
         Instant now = Instant.now();
-        UserCheckpoint value = checkpoints.findByUserEmail(email).orElseGet(() -> new UserCheckpoint(user, now));
-        value.observe(now);
+        UserCheckpoint value = checkpoints.findByUserEmailAndWatchlistId(email, watchlist.getId())
+                .orElseGet(() -> new UserCheckpoint(user, watchlist, now));
+        value.review(now);
         checkpoints.save(value);
         return now;
     }

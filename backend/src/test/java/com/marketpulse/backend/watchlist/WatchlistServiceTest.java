@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.marketpulse.backend.dashboard.UserCheckpointRepository;
 import com.marketpulse.backend.user.User;
 import com.marketpulse.backend.user.UserRepository;
 import com.marketpulse.backend.watchlist.WatchlistDtos.AddWatchlistItemRequest;
@@ -27,6 +28,7 @@ class WatchlistServiceTest {
     @Mock private UserRepository users;
     @Mock private InstrumentRepository instruments;
     @Mock private MarketSnapshotRepository snapshots;
+    @Mock private UserCheckpointRepository checkpoints;
     private WatchlistService service;
 
     @BeforeEach
@@ -89,5 +91,17 @@ class WatchlistServiceTest {
 
         verify(items).deleteByWatchlistIdAndTicker(7L, "AAPL");
         assertThat(response.items()).isEmpty();
+    }
+
+    @Test
+    void deletesCheckpointsWhenDeletingOwnedWatchlist() {
+        when(watchlists.findByIdAndUserEmail(7L, "ada@example.com")).thenReturn(Optional.of(
+                new Watchlist(new User("Ada", "ada@example.com", "hash"), "Growth")));
+        WatchlistService value = new WatchlistService(watchlists, items, users, instruments, snapshots, checkpoints);
+
+        value.delete("ada@example.com", 7L);
+
+        verify(checkpoints).deleteByWatchlistId(7L);
+        verify(watchlists).deleteById(7L);
     }
 }

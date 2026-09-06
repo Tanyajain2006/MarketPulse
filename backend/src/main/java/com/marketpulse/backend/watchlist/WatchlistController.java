@@ -25,7 +25,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/watchlists")
 public class WatchlistController {
     private final WatchlistService service;
-    public WatchlistController(WatchlistService service) { this.service = service; }
+    private final CheckpointService checkpoints;
+    public WatchlistController(WatchlistService service, CheckpointService checkpoints) {
+        this.service = service;
+        this.checkpoints = checkpoints;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -69,7 +73,12 @@ public class WatchlistController {
     }
 
     @PostMapping("/{id}/checkpoint")
-    public WatchlistResponse checkpoint(Authentication authentication, @PathVariable Long id) {
-        return service.markReviewed(authentication.getName(), id);
+    public CheckpointDtos.CheckpointResponse checkpoint(Authentication authentication, @PathVariable Long id) {
+        return checkpoints.review(authentication.getName(), id);
+    }
+
+    @GetMapping("/{id}/checkpoint")
+    public CheckpointDtos.CheckpointResponse getCheckpoint(Authentication authentication, @PathVariable Long id) {
+        return checkpoints.get(authentication.getName(), id);
     }
 }

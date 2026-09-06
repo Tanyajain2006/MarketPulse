@@ -41,7 +41,7 @@ class DashboardServiceTest {
         var previous = new MarketSnapshot("AAPL", previousTime, new BigDecimal("100"), 100L, new BigDecimal("1"), new BigDecimal("0"), "TEST");
         var current = new MarketSnapshot("AAPL", currentTime, new BigDecimal("120"), 300L, new BigDecimal("2"), new BigDecimal("1"), "TEST");
         when(watchlists.findAllByUserEmailOrderByUpdatedAtDesc("ada@example.com")).thenReturn(List.of(watchlist));
-        when(checkpoints.findByUserEmail("ada@example.com")).thenReturn(Optional.empty());
+        when(checkpoints.findByUserEmailAndWatchlistId("ada@example.com", watchlist.getId())).thenReturn(Optional.empty());
         when(snapshots.findSinceForTicker("AAPL", Instant.EPOCH, Pageable.ofSize(25))).thenReturn(List.of(current, previous));
         when(instruments.findByTickerIgnoreCase("AAPL")).thenReturn(Optional.of(new Instrument("AAPL", "Apple Inc.", "NASDAQ")));
         when(news.findFiltered("AAPL", Instant.EPOCH, currentTime, null, Pageable.ofSize(1))).thenReturn(List.of());

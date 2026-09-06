@@ -7,10 +7,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.marketpulse.backend.dashboard.UserCheckpointRepository;
 import com.marketpulse.backend.user.User;
 import com.marketpulse.backend.user.UserRepository;
 import com.marketpulse.backend.watchlist.WatchlistDtos.AddWatchlistItemRequest;
@@ -28,14 +30,22 @@ public class WatchlistService {
     private final UserRepository users;
         private final InstrumentRepository instruments;
         private final MarketSnapshotRepository snapshots;
+        private final UserCheckpointRepository checkpoints;
 
+        @Autowired
         public WatchlistService(WatchlistRepository watchlists, WatchlistItemRepository items, UserRepository users,
-            InstrumentRepository instruments, MarketSnapshotRepository snapshots) {
+            InstrumentRepository instruments, MarketSnapshotRepository snapshots, UserCheckpointRepository checkpoints) {
         this.watchlists = watchlists;
         this.items = items;
         this.users = users;
         this.instruments = instruments;
         this.snapshots = snapshots;
+        this.checkpoints = checkpoints;
+    }
+
+    WatchlistService(WatchlistRepository watchlists, WatchlistItemRepository items, UserRepository users,
+            InstrumentRepository instruments, MarketSnapshotRepository snapshots) {
+        this(watchlists, items, users, instruments, snapshots, null);
     }
 
     @Transactional
@@ -62,6 +72,7 @@ public class WatchlistService {
     @Transactional
     public void delete(String email, Long id) {
         findOwned(email, id);
+        if (checkpoints != null) checkpoints.deleteByWatchlistId(id);
         watchlists.deleteById(Objects.requireNonNull(id));
     }
 
