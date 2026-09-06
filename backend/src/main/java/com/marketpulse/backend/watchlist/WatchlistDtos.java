@@ -25,8 +25,9 @@ public final class WatchlistDtos {
     public record InstrumentResponse(String ticker, String companyName, String exchange) { }
 
     public record MarketDataResponse(String ticker, String companyName, String exchange,
-            java.math.BigDecimal price, java.math.BigDecimal changePercent, String marketStatus,
-            int materiality, String narrative, Instant timestamp) { }
+            java.math.BigDecimal price, Long volume, java.math.BigDecimal volatility,
+            java.math.BigDecimal sectorChange, java.math.BigDecimal changePercent,
+            Instant observationTimestamp, Instant ingestionTimestamp, String source, String dataQuality) { }
 
     public record WatchlistResponse(
             Long id, String name, List<WatchlistItemResponse> items,

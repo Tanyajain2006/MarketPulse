@@ -1,7 +1,7 @@
 import { request } from './apiClient'
 
 export type Snapshot = {
-  timestamp: string
+  observationTimestamp: string
   ticker: string
   price: number
   volume: number
@@ -22,3 +22,10 @@ export function getHistoricalData(filters: { ticker?: string; from?: string; to?
 }
 
 export function getAvailableTickers() { return request<string[]>('/market-data/tickers') }
+export function getLatest(ticker: string) { return request<Snapshot>(`/market/${encodeURIComponent(ticker)}/latest`) }
+export function getHistory(ticker: string, from?: string, to?: string) {
+  const params = new URLSearchParams()
+  if (from) params.set('from', from)
+  if (to) params.set('to', to)
+  return request<Snapshot[]>(`/market/${encodeURIComponent(ticker)}/history?${params.toString()}`)
+}

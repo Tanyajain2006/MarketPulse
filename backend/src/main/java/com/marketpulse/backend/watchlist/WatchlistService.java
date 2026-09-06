@@ -132,11 +132,11 @@ public class WatchlistService {
     }
 
     private WatchlistDtos.MarketDataResponse marketResponse(WatchlistItem item, MarketSnapshot snapshot, BigDecimal changePercent) {
-        if (snapshot == null) return new WatchlistDtos.MarketDataResponse(item.getTicker(), item.getCompanyName(), item.getExchange(), null, null, "UNAVAILABLE", 0, "No market snapshot available", null);
-        int materiality = Math.min(100, (int) Math.round(Math.abs(snapshot.getSectorChange().doubleValue()) * 10 + snapshot.getVolatility().doubleValue() * 5));
-        String status = materiality >= 70 ? "MEANINGFUL" : materiality >= 35 ? "WATCHING" : "NORMAL";
-        String narrative = snapshot.getSectorChange().signum() >= 0 ? "Positive sector momentum" : "Sector movement turned lower";
-        return new WatchlistDtos.MarketDataResponse(item.getTicker(), item.getCompanyName(), item.getExchange(), snapshot.getPrice(), changePercent, status, materiality, narrative, snapshot.getTimestamp());
+        if (snapshot == null) return new WatchlistDtos.MarketDataResponse(item.getTicker(), item.getCompanyName(), item.getExchange(),
+            null, null, null, null, null, null, null, null, "UNAVAILABLE");
+        return new WatchlistDtos.MarketDataResponse(item.getTicker(), item.getCompanyName(), item.getExchange(),
+            snapshot.getPrice(), snapshot.getVolume(), snapshot.getVolatility(), snapshot.getSectorChange(), changePercent,
+            snapshot.getObservationTimestamp(), snapshot.getIngestionTimestamp(), snapshot.getSource(), snapshot.getDataQuality());
     }
 
     private String cleanName(String name) { return name.trim(); }

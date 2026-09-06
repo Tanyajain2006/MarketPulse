@@ -14,15 +14,18 @@ public interface MarketSnapshotRepository extends JpaRepository<MarketSnapshot, 
     boolean existsByTickerAndObservationTimestamp(String ticker, java.time.Instant timestamp);
 
     List<MarketSnapshot> findTop2ByTickerOrderByObservationTimestampDesc(String ticker);
+    java.util.Optional<MarketSnapshot> findFirstByTickerAndDataQualityOrderByObservationTimestampDesc(String ticker, String dataQuality);
         @Query("select s from MarketSnapshot s where s.ticker = :ticker and s.observationTimestamp >= :from order by s.observationTimestamp desc")
         List<MarketSnapshot> findSinceForTicker(@Param("ticker") String ticker, @Param("from") java.time.Instant from,
             Pageable pageable);
         List<MarketSnapshot> findByTickerAndObservationTimestampBetweenOrderByObservationTimestampDesc(String ticker, java.time.Instant from,
             java.time.Instant to, Pageable pageable);
+        List<MarketSnapshot> findByTickerAndDataQualityAndObservationTimestampBetweenOrderByObservationTimestampAsc(String ticker,
+            String dataQuality, java.time.Instant from, java.time.Instant to, Pageable pageable);
         List<MarketSnapshot> findByTickerOrderByObservationTimestampDesc(String ticker, Pageable pageable);
 
         @Query("select s from MarketSnapshot s where s.ticker in :tickers and s.observationTimestamp >= :from order by s.observationTimestamp desc")
         List<MarketSnapshot> findSinceForTickers(@Param("tickers") List<String> tickers, @Param("from") java.time.Instant from);
-    @Query("select s from MarketSnapshot s where s.ticker in :tickers and s.observationTimestamp = (select max(latest.observationTimestamp) from MarketSnapshot latest where latest.ticker = s.ticker)")
+    @Query("select s from MarketSnapshot s where s.dataQuality = 'VALID' and s.ticker in :tickers and s.observationTimestamp = (select max(latest.observationTimestamp) from MarketSnapshot latest where latest.ticker = s.ticker and latest.dataQuality = 'VALID')")
     List<MarketSnapshot> findLatestForTickers(@Param("tickers") List<String> tickers);
 }

@@ -31,6 +31,13 @@ public class MarketService {
     }
 
     @Transactional(readOnly = true)
+    public MarketSnapshotDtos.SnapshotResponse latest(String ticker) {
+        String normalized = normalizeTicker(ticker);
+        return snapshots.findFirstByTickerAndDataQualityOrderByObservationTimestampDesc(normalized, "VALID")
+                .map(this::snapshot).orElseThrow(EntityNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
     public List<MarketSnapshotDtos.SnapshotResponse> latestTickers() {
         List<String> tickers = snapshots.findDistinctTickers();
         return tickers.isEmpty() ? List.of() : latest(tickers);
@@ -42,13 +49,18 @@ public class MarketService {
     @Transactional(readOnly = true)
     public List<MarketSnapshotDtos.SnapshotResponse> history(String ticker, Instant from, Instant to, int limit) {
         String normalized = normalizeTicker(ticker);
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new IllegalArgumentException("from must be before or equal to to.");
+        }
         if (from == null && to == null) {
-            return snapshots.findByTickerOrderByObservationTimestampDesc(normalized, PageRequest.of(0, limit)).stream().map(this::snapshot).toList();
+            return snapshots.findByTickerAndDataQualityAndObservationTimestampBetweenOrderByObservationTimestampAsc(
+                    normalized, "VALID", java.time.Instant.EPOCH, java.time.Instant.now(), PageRequest.of(0, limit))
+                    .stream().map(this::snapshot).toList();
         }
         Instant effectiveFrom = from == null ? Instant.EPOCH : from;
         Instant effectiveTo = to == null ? Instant.now() : to;
-        return snapshots.findByTickerAndObservationTimestampBetweenOrderByObservationTimestampDesc(normalized, effectiveFrom, effectiveTo,
-                PageRequest.of(0, limit)).stream().map(this::snapshot).toList();
+        return snapshots.findByTickerAndDataQualityAndObservationTimestampBetweenOrderByObservationTimestampAsc(
+                normalized, "VALID", effectiveFrom, effectiveTo, PageRequest.of(0, limit)).stream().map(this::snapshot).toList();
     }
 
     @Transactional(readOnly = true)

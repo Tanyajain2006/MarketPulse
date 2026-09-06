@@ -1,7 +1,6 @@
 package com.marketpulse.backend.market;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,8 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @RestController
 @RequestMapping("/api/market")
@@ -30,14 +27,9 @@ public class MarketController {
         return importer.importConfiguredFile();
     }
 
-    @GetMapping("/latest")
-    public List<MarketSnapshotDtos.SnapshotResponse> latest(@RequestParam String tickers) {
-        return market.latest(Arrays.asList(tickers.split(",")));
-    }
-
-    @GetMapping("/{ticker}")
-    public MarketSnapshotDtos.SnapshotResponse current(@PathVariable String ticker) {
-        return market.latest(List.of(ticker)).stream().findFirst().orElseThrow(EntityNotFoundException::new);
+    @GetMapping("/{ticker}/latest")
+    public MarketSnapshotDtos.SnapshotResponse latest(@PathVariable String ticker) {
+        return market.latest(ticker);
     }
 
     @GetMapping("/{ticker}/history")

@@ -15,11 +15,14 @@ export type MarketData = {
   companyName?: string
   exchange?: string
   price: number | null
+  volume: number | null
+  volatility: number | null
+  sectorChange: number | null
   changePercent: number | null
-  marketStatus: string
-  materiality: number
-  narrative: string
-  timestamp: string | null
+  observationTimestamp: string | null
+  ingestionTimestamp: string | null
+  source: string
+  dataQuality: string
 }
 
 export type Instrument = { ticker: string; companyName: string; exchange: string }

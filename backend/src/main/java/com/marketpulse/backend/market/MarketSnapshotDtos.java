@@ -6,7 +6,7 @@ import java.time.Instant;
 public final class MarketSnapshotDtos {
     private MarketSnapshotDtos() { }
 
-    public record SnapshotResponse(Instant timestamp, String ticker, BigDecimal price, Long volume,
+    public record SnapshotResponse(Instant observationTimestamp, String ticker, BigDecimal price, Long volume,
             BigDecimal volatility, BigDecimal sectorChange, String source, Instant ingestionTimestamp,
             String dataQuality) { }
 
