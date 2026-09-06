@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 
 import com.marketpulse.backend.watchlist.InstrumentRepository;
 import com.marketpulse.backend.watchlist.MarketSnapshot;
@@ -30,5 +31,16 @@ class MarketServiceTest {
         List<MarketSnapshotDtos.SnapshotResponse> result = service.latest(List.of(" aapl ", "NVDA", "AAPL"));
 
         assertThat(result).extracting(MarketSnapshotDtos.SnapshotResponse::ticker).containsExactly("AAPL");
+    }
+
+    @Test
+    void queriesTickerHistoryWithinObservationRange() {
+        Instant from = Instant.parse("2026-09-01T09:00:00Z");
+        Instant to = Instant.parse("2026-09-01T11:00:00Z");
+        when(snapshots.findByTickerAndObservationTimestampBetweenOrderByObservationTimestampDesc(
+                "AAPL", from, to, PageRequest.of(0, 100))).thenReturn(List.of());
+        MarketService service = new MarketService(snapshots, instruments);
+
+        assertThat(service.history("aapl", from, to, 100)).isEmpty();
     }
 }

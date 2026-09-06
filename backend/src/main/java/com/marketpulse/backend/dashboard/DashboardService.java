@@ -80,7 +80,7 @@ public class DashboardService {
     }
 
     private MarketSnapshot previous(String ticker, MarketSnapshot current) {
-        return snapshots.findTop2ByTickerOrderByTimestampDesc(ticker).stream()
+        return snapshots.findTop2ByTickerOrderByObservationTimestampDesc(ticker).stream()
                 .filter(value -> value.getTimestamp().isBefore(current.getTimestamp())).findFirst().orElse(null);
     }
 

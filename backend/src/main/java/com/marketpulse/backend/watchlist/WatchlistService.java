@@ -126,7 +126,7 @@ public class WatchlistService {
 
     private BigDecimal priceChange(String ticker, MarketSnapshot latest) {
         if (latest == null) return null;
-        List<MarketSnapshot> history = snapshots.findTop2ByTickerOrderByTimestampDesc(ticker);
+        List<MarketSnapshot> history = snapshots.findTop2ByTickerOrderByObservationTimestampDesc(ticker);
         if (history.size() < 2 || history.get(1).getPrice().signum() == 0) return null;
         return latest.getPrice().subtract(history.get(1).getPrice()).divide(history.get(1).getPrice(), 6, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
     }

@@ -41,6 +41,7 @@ venv/
 # Local data and generated files
 data/*
 !data/.gitkeep
+!data/historical-market-data.csv
 
 # OS/editor temporary files
 *.swp

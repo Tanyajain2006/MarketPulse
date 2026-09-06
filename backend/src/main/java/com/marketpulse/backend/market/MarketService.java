@@ -34,11 +34,11 @@ public class MarketService {
     public List<MarketSnapshotDtos.SnapshotResponse> history(String ticker, Instant from, Instant to, int limit) {
         String normalized = normalizeTicker(ticker);
         if (from == null && to == null) {
-            return snapshots.findByTickerOrderByTimestampDesc(normalized, PageRequest.of(0, limit)).stream().map(this::snapshot).toList();
+            return snapshots.findByTickerOrderByObservationTimestampDesc(normalized, PageRequest.of(0, limit)).stream().map(this::snapshot).toList();
         }
         Instant effectiveFrom = from == null ? Instant.EPOCH : from;
         Instant effectiveTo = to == null ? Instant.now() : to;
-        return snapshots.findByTickerAndTimestampBetweenOrderByTimestampDesc(normalized, effectiveFrom, effectiveTo,
+        return snapshots.findByTickerAndObservationTimestampBetweenOrderByObservationTimestampDesc(normalized, effectiveFrom, effectiveTo,
                 PageRequest.of(0, limit)).stream().map(this::snapshot).toList();
     }
 
@@ -49,7 +49,8 @@ public class MarketService {
 
     private MarketSnapshotDtos.SnapshotResponse snapshot(MarketSnapshot value) {
         return new MarketSnapshotDtos.SnapshotResponse(value.getTimestamp(), value.getTicker(), value.getPrice(),
-                value.getVolume(), value.getVolatility(), value.getSectorChange(), value.getSource());
+            value.getVolume(), value.getVolatility(), value.getSectorChange(), value.getSource(),
+            value.getIngestionTimestamp(), value.getDataQuality());
     }
 
     public String normalizeTicker(String ticker) {

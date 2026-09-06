@@ -82,7 +82,7 @@ public class DemoDataImporter implements CommandLineRunner {
             if (row.length < 7) continue;
             String ticker = row[1].trim().toUpperCase();
             var timestamp = LocalDateTime.parse(row[0].trim().replace(' ', 'T')).toInstant(ZoneOffset.UTC);
-            if (!snapshots.existsByTickerAndTimestamp(ticker, timestamp)) {
+            if (!snapshots.existsByTickerAndObservationTimestamp(ticker, timestamp)) {
                 snapshots.save(new MarketSnapshot(ticker, timestamp, new BigDecimal(row[2]), Long.valueOf(row[3]),
                         new BigDecimal(row[4]), new BigDecimal(row[5]), row[6].trim()));
             }

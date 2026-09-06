@@ -8,18 +8,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MarketSnapshotRepository extends JpaRepository<MarketSnapshot, Long> {
-    boolean existsByTickerAndTimestamp(String ticker, java.time.Instant timestamp);
+    boolean existsByTickerAndObservationTimestamp(String ticker, java.time.Instant timestamp);
 
-    List<MarketSnapshot> findTop2ByTickerOrderByTimestampDesc(String ticker);
-        @Query("select s from MarketSnapshot s where s.ticker = :ticker and s.timestamp >= :from order by s.timestamp desc")
+    List<MarketSnapshot> findTop2ByTickerOrderByObservationTimestampDesc(String ticker);
+        @Query("select s from MarketSnapshot s where s.ticker = :ticker and s.observationTimestamp >= :from order by s.observationTimestamp desc")
         List<MarketSnapshot> findSinceForTicker(@Param("ticker") String ticker, @Param("from") java.time.Instant from,
             Pageable pageable);
-        List<MarketSnapshot> findByTickerAndTimestampBetweenOrderByTimestampDesc(String ticker, java.time.Instant from,
+        List<MarketSnapshot> findByTickerAndObservationTimestampBetweenOrderByObservationTimestampDesc(String ticker, java.time.Instant from,
             java.time.Instant to, Pageable pageable);
-        List<MarketSnapshot> findByTickerOrderByTimestampDesc(String ticker, Pageable pageable);
+        List<MarketSnapshot> findByTickerOrderByObservationTimestampDesc(String ticker, Pageable pageable);
 
-        @Query("select s from MarketSnapshot s where s.ticker in :tickers and s.timestamp >= :from order by s.timestamp desc")
+        @Query("select s from MarketSnapshot s where s.ticker in :tickers and s.observationTimestamp >= :from order by s.observationTimestamp desc")
         List<MarketSnapshot> findSinceForTickers(@Param("tickers") List<String> tickers, @Param("from") java.time.Instant from);
-    @Query("select s from MarketSnapshot s where s.ticker in :tickers and s.timestamp = (select max(latest.timestamp) from MarketSnapshot latest where latest.ticker = s.ticker)")
+    @Query("select s from MarketSnapshot s where s.ticker in :tickers and s.observationTimestamp = (select max(latest.observationTimestamp) from MarketSnapshot latest where latest.ticker = s.ticker)")
     List<MarketSnapshot> findLatestForTickers(@Param("tickers") List<String> tickers);
 }

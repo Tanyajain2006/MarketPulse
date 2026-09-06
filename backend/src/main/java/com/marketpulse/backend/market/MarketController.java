@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,8 +18,17 @@ import jakarta.persistence.EntityNotFoundException;
 @RequestMapping("/api/market")
 public class MarketController {
     private final MarketService market;
+    private final MarketDataImportService importer;
 
-    public MarketController(MarketService market) { this.market = market; }
+    public MarketController(MarketService market, MarketDataImportService importer) {
+        this.market = market;
+        this.importer = importer;
+    }
+
+    @PostMapping("/history/import")
+    public MarketDataImportService.ImportSummary importHistory() {
+        return importer.importConfiguredFile();
+    }
 
     @GetMapping("/latest")
     public List<MarketSnapshotDtos.SnapshotResponse> latest(@RequestParam String tickers) {
